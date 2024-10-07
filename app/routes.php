@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Application\Actions\User\ListUsersAction;
-use App\Application\Actions\User\ViewUserAction;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
+use App\Quotations\Printer;
 
 return function (App $app) {
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -25,21 +24,26 @@ return function (App $app) {
     });
 
     $app->post('/generate-pdf', function (Request $request, Response $response) {
-        // 调用 HTML 到 PDF 的转换功能
-        require_once __DIR__ . '/../html_to_pdf.php';
-        $html = '<h1>这是一个示例PDF</h1><p>生成时间：' . date('Y-m-d H:i:s') . '</p>';
-        $pdfContent = convertHtmlToPdf($html);
+        // 获取发票 HTML
+
+        $pdfContent = Printer::print('simple', [
+            'invoiceNumber' => 'INV-123456',
+            'invoiceDate' => '2020-01-01',
+            'dueDate' => '2020-01-31',
+            'total' => 1000,
+            'tax' => 50,
+            'grandTotal' => 1050,
+            'items' => [
+                ['description' => 'Item 1', 'quantity' => 2, 'price' => 250, 'total' => 500],
+                ['description' => 'Item 2', 'quantity' => 1, 'price' => 500, 'total' => 500],
+            ],
+        ]);
 
         // 设置响应头，使浏览器将其识别为下载的 PDF 文件
         $response = $response->withHeader('Content-Type', 'application/pdf')
-            ->withHeader('Content-Disposition', 'attachment; filename="generated.pdf"');
+            ->withHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
 
         $response->getBody()->write($pdfContent);
         return $response;
-    });
-
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
     });
 };
