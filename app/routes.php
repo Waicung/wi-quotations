@@ -27,9 +27,8 @@ return function (App $app) {
     });
 
     $app->post('/generate-quotation', function (Request $request, Response $response) {
-        // 获取发票 HTML
-
-        $pdfContent = Printer::print('simple', []);
+        
+        $pdfContent = Printer::print('simple', $request->getParsedBody());
 
         // 设置响应头，使浏览器将其识别为下载的 PDF 文件
         $response = $response->withHeader('Content-Type', 'application/pdf')
@@ -41,8 +40,9 @@ return function (App $app) {
 
     $app->post('/generate-invoice', function (Request $request, Response $response) {
         // 获取发票 HTML
-
-        $pdfContent = Printer::print('simple', []);
+        $data = $request->getParsedBody();
+        
+        $pdfContent = Printer::print('invoice', $data);
 
         // 设置响应头，使浏览器将其识别为下载的 PDF 文件
         $response = $response->withHeader('Content-Type', 'application/pdf')
