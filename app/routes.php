@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Profile;
+use App\Quotations\Printer;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
-use App\Quotations\Printer;
 use Slim\Views\Twig;
 
 return function (App $app) {
@@ -22,9 +22,8 @@ return function (App $app) {
 
     $app->get('/profiles', function (Request $request, Response $response) {
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'profiles.twig', [
-            'profiles' => Profile::all()
-        ]);
+        $profiles = Profile::all();
+        return $view->render($response, 'profiles.twig', ['profiles' => $profiles]);
     });
 
     $app->post('/generate-quotation', function (Request $request, Response $response) {
@@ -60,7 +59,7 @@ return function (App $app) {
 
         // Store data in the database
         Profile::create([
-            'label' => $data['company_label'],
+            'company_label' => $data['company_label'],
             'company_name' => $data['company_name'],
             'company_address' => $data['company_address'],
             'company_phone' => $data['company_phone'],
@@ -68,6 +67,19 @@ return function (App $app) {
         ]);
 
         // Redirect or return a response
-        return $response->withStatus(302)->withHeader('Location', '/profiles');
+        return $response->withHeader('Location', '/profiles')->withStatus(302);
+    });
+
+    $app->post('/delete-profile/{id}', function (Request $request, Response $response, array $args) {
+        $profileId = $args['id'];
+
+        // Find the profile by ID and delete it
+        $profile = Profile::find($profileId);
+        if ($profile) {
+            $profile->delete();
+        }
+
+        // Redirect or return a response
+        return $response->withHeader('Location', '/profiles')->withStatus(302);
     });
 };

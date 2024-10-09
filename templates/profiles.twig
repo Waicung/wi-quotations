@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/output.css">
 </head>
 <body class="bg-gray-100 text-gray-900">
+    {% include 'partials/navigation.twig' %}
     <div class="container mx-auto p-4">
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
             <h1 class="text-3xl font-bold mb-4">Profiles</h1>
@@ -49,13 +50,14 @@
             <p class="text-sm text-gray-500">{{ profile.company_address }}</p>
             <p class="text-sm text-gray-500">{{ profile.company_phone }}</p>
             <p class="text-sm text-gray-500">{{ profile.company_email }}</p>
+            <form action="/delete-profile/{{ profile.id }}" method="post" class="mt-2">
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Delete</button>
+            </form>
             </div>
             </div>
             {% endfor %}
             </div>
         </div>
     </div>
-
-    
 </body>
 </html>
